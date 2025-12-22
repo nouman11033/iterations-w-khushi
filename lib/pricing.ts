@@ -5,10 +5,10 @@ export interface AvatarPlan {
   name: string;
   provider: 'heygen' | 'anam' | 'tevus';
   tier: string;
-  monthlyPrice: number; // Annual payment divided by 12
+  monthlyPrice: number; // Monthly price in USD
   minutes: number;
-  maxLength?: number; // in minutes
-  concurrency: number;
+  maxLength?: number; // in minutes (undefined = unlimited)
+  concurrency?: number; // Max concurrent sessions (undefined = unlimited/custom)
   additionalPerMin: number;
   hasInbuiltVoice: boolean;
 }
@@ -35,7 +35,7 @@ export interface HostingOption {
   storageGB: number;
 }
 
-// Avatar Plans (Annual prices converted to monthly)
+// Avatar Plans (Monthly prices)
 export const AVATAR_PLANS: AvatarPlan[] = [
   // HeyGen
   {
@@ -43,7 +43,7 @@ export const AVATAR_PLANS: AvatarPlan[] = [
     name: 'HeyGen Essential',
     provider: 'heygen',
     tier: 'Essential',
-    monthlyPrice: 99 / 12, // $99 annual
+    monthlyPrice: 99, // $99/month
     minutes: 1000,
     maxLength: 20,
     concurrency: 20,
@@ -51,51 +51,15 @@ export const AVATAR_PLANS: AvatarPlan[] = [
     hasInbuiltVoice: true,
   },
   {
-    id: 'heygen-starter',
-    name: 'HeyGen Starter',
+    id: 'heygen-business',
+    name: 'HeyGen Business',
     provider: 'heygen',
-    tier: 'Starter',
-    monthlyPrice: 12,
-    minutes: 45,
-    maxLength: 5,
-    concurrency: 1,
-    additionalPerMin: 0.18,
-    hasInbuiltVoice: true,
-  },
-  {
-    id: 'heygen-explorer',
-    name: 'HeyGen Explorer',
-    provider: 'heygen',
-    tier: 'Explorer',
-    monthlyPrice: 49,
-    minutes: 90,
-    maxLength: 10,
-    concurrency: 3,
-    additionalPerMin: 0.18,
-    hasInbuiltVoice: true,
-  },
-  {
-    id: 'heygen-growth',
-    name: 'HeyGen Growth',
-    provider: 'heygen',
-    tier: 'Growth',
-    monthlyPrice: 299,
-    minutes: 300,
-    maxLength: 30,
-    concurrency: 5,
-    additionalPerMin: 0.18,
-    hasInbuiltVoice: true,
-  },
-  {
-    id: 'heygen-pro',
-    name: 'HeyGen Pro',
-    provider: 'heygen',
-    tier: 'Pro',
-    monthlyPrice: 799,
-    minutes: 1000,
-    maxLength: undefined, // unlimited
-    concurrency: 10,
-    additionalPerMin: 0.18,
+    tier: 'Business',
+    monthlyPrice: 0, // Custom pricing - not specified
+    minutes: 0, // Custom
+    maxLength: undefined,
+    concurrency: undefined, // Custom
+    additionalPerMin: 0,
     hasInbuiltVoice: true,
   },
   // Anam
@@ -108,7 +72,19 @@ export const AVATAR_PLANS: AvatarPlan[] = [
     minutes: 45,
     maxLength: 5,
     concurrency: 1,
-    additionalPerMin: 0.27,
+    additionalPerMin: 0.18,
+    hasInbuiltVoice: true,
+  },
+  {
+    id: 'anam-explorer',
+    name: 'Anam Explorer',
+    provider: 'anam',
+    tier: 'Explorer',
+    monthlyPrice: 49,
+    minutes: 90,
+    maxLength: 10,
+    concurrency: 3,
+    additionalPerMin: 0.18,
     hasInbuiltVoice: true,
   },
   {
@@ -116,11 +92,23 @@ export const AVATAR_PLANS: AvatarPlan[] = [
     name: 'Anam Growth',
     provider: 'anam',
     tier: 'Growth',
-    monthlyPrice: 49,
-    minutes: 90,
-    maxLength: 10,
-    concurrency: 3,
-    additionalPerMin: 0.54,
+    monthlyPrice: 299,
+    minutes: 300,
+    maxLength: 30,
+    concurrency: 5,
+    additionalPerMin: 0.18,
+    hasInbuiltVoice: true,
+  },
+  {
+    id: 'anam-pro',
+    name: 'Anam Pro',
+    provider: 'anam',
+    tier: 'Pro',
+    monthlyPrice: 799,
+    minutes: 1000,
+    maxLength: undefined, // unlimited (--)
+    concurrency: 10,
+    additionalPerMin: 0.18,
     hasInbuiltVoice: true,
   },
   {
@@ -128,46 +116,46 @@ export const AVATAR_PLANS: AvatarPlan[] = [
     name: 'Anam Enterprise',
     provider: 'anam',
     tier: 'Enterprise',
-    monthlyPrice: 299,
-    minutes: 300,
-    maxLength: 30,
-    concurrency: 5,
-    additionalPerMin: 1.00,
+    monthlyPrice: 0, // Custom pricing - not specified
+    minutes: 0, // Custom
+    maxLength: undefined, // unlimited (--)
+    concurrency: 30, // 30+
+    additionalPerMin: 0.18,
     hasInbuiltVoice: true,
   },
-  // Tevus
+  // Tavus
   {
-    id: 'tevus-starter',
-    name: 'Tevus Starter',
-    provider: 'tevus',
+    id: 'tavus-starter',
+    name: 'Tavus Starter',
+    provider: 'tevus', // Keep provider as 'tevus' for consistency
     tier: 'Starter',
     monthlyPrice: 59,
     minutes: 100,
-    maxLength: undefined,
+    maxLength: undefined, // Not specified
     concurrency: 3,
     additionalPerMin: 0.37,
     hasInbuiltVoice: true,
   },
   {
-    id: 'tevus-growth',
-    name: 'Tevus Growth',
+    id: 'tavus-growth',
+    name: 'Tavus Growth',
     provider: 'tevus',
     tier: 'Growth',
     monthlyPrice: 397,
     minutes: 1250,
-    maxLength: undefined,
+    maxLength: undefined, // Not specified
     concurrency: 15,
     additionalPerMin: 0.32,
     hasInbuiltVoice: true,
   },
   {
-    id: 'tevus-enterprise',
-    name: 'Tevus Enterprise',
+    id: 'tavus-enterprise',
+    name: 'Tavus Enterprise',
     provider: 'tevus',
     tier: 'Enterprise',
-    monthlyPrice: 1666.67,
+    monthlyPrice: 1666.67, // $1,666.67/month (annual payment converted to monthly)
     minutes: 6667,
-    maxLength: undefined,
+    maxLength: undefined, // Not specified
     concurrency: 30,
     additionalPerMin: 0.25,
     hasInbuiltVoice: true,

@@ -42,8 +42,12 @@ export function calculateCombinations(input: BudgetInput): Combination[] {
   const apiBudgetINR = (input.monthlyBudgetINR * input.apiAllocationPercent) / 100;
   const hostingBudgetINR = (input.monthlyBudgetINR * input.hostingAllocationPercent) / 100;
 
-  // Generate all combinations
+  // Generate all combinations (skip custom plans with monthlyPrice = 0)
   for (const avatarPlan of AVATAR_PLANS) {
+    // Skip custom/enterprise plans without fixed pricing
+    if (avatarPlan.monthlyPrice === 0) {
+      continue;
+    }
     for (const hostingOption of HOSTING_OPTIONS) {
       // If using voice agent, try each voice agent
       if (input.useVoiceAgent) {
@@ -128,7 +132,7 @@ function calculateCombination(
 
   // Generate warnings
   const warnings: string[] = [];
-  if (input.concurrentSessions > avatarPlan.concurrency) {
+  if (avatarPlan.concurrency !== undefined && input.concurrentSessions > avatarPlan.concurrency) {
     warnings.push(
       `Concurrent sessions (${input.concurrentSessions}) exceed avatar plan limit (${avatarPlan.concurrency})`
     );
@@ -157,7 +161,11 @@ function calculateCombination(
   let score = 0;
   if (fitsBudget) score += 1000;
   score -= totalCostINR / 100; // Lower cost = higher score
-  if (input.concurrentSessions <= avatarPlan.concurrency) score += 100;
+  if (avatarPlan.concurrency !== undefined && input.concurrentSessions <= avatarPlan.concurrency) {
+    score += 100;
+  } else if (avatarPlan.concurrency === undefined) {
+    score += 100; // Unlimited concurrency is a plus
+  }
   if (voiceAgent && voiceAgent.concurrency && input.concurrentSessions <= voiceAgent.concurrency) {
     score += 100;
   }
@@ -185,8 +193,8 @@ function calculateCombination(
 }
 
 function isValidCombination(combination: Combination, input: BudgetInput): boolean {
-  // Check avatar concurrency
-  if (input.concurrentSessions > combination.avatarPlan.concurrency) {
+  // Check avatar concurrency (skip if undefined, as it means custom/unlimited)
+  if (combination.avatarPlan.concurrency !== undefined && input.concurrentSessions > combination.avatarPlan.concurrency) {
     return false; // Can't handle required concurrency
   }
 
