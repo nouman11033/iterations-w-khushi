@@ -6,6 +6,7 @@ import {
   VoiceAgent,
   HostingOption,
   convertUSDToINR,
+  convertINRToUSD,
   MISC_EXPENSES_MONTHLY_INR,
 } from './pricing';
 
@@ -27,10 +28,22 @@ export interface Combination {
   totalCostINR: number;
   breakdown: {
     avatarCostINR: number;
+    avatarCostUSD: number;
+    avatarBaseCostUSD: number;
+    avatarAdditionalMinutes: number;
+    avatarAdditionalCostUSD: number;
     voiceCostINR: number;
+    voiceCostUSD: number;
+    voiceBaseCostUSD?: number;
+    voicePerMinuteCostUSD?: number;
+    voiceTotalTokens?: number;
     hostingCostINR: number;
+    hostingBaseCostINR: number;
+    hostingUsersCostINR: number;
+    hostingCallsCostINR: number;
     miscExpensesINR: number;
     totalCostINR: number;
+    totalCostUSD: number;
   };
   fitsBudget: boolean;
   score: number; // Higher is better
@@ -92,39 +105,46 @@ function calculateCombination(
   hostingBudgetINR: number
 ): Combination {
   // Calculate avatar cost
-  const avatarCostUSD = avatarPlan.monthlyPrice;
+  const avatarBaseCostUSD = avatarPlan.monthlyPrice;
   const includedMinutes = avatarPlan.minutes;
   const additionalMinutes = Math.max(0, input.minutesPerMonth - includedMinutes);
-  const additionalCostUSD = additionalMinutes * avatarPlan.additionalPerMin;
-  const totalAvatarCostUSD = avatarCostUSD + additionalCostUSD;
+  const avatarAdditionalCostUSD = additionalMinutes * avatarPlan.additionalPerMin;
+  const totalAvatarCostUSD = avatarBaseCostUSD + avatarAdditionalCostUSD;
   const avatarCostINR = convertUSDToINR(totalAvatarCostUSD);
 
   // Calculate voice cost (if using voice agent)
   let voiceCostINR = 0;
+  let voiceCostUSD = 0;
+  let voiceBaseCostUSD: number | undefined = undefined;
+  let voicePerMinuteCostUSD: number | undefined = undefined;
+  let voiceTotalTokens: number | undefined = undefined;
+  
   if (voiceAgent) {
     if (voiceAgent.pricingModel === 'tokens') {
       // Token-based pricing
-      const totalTokens = input.minutesPerMonth * (voiceAgent.tokensPerMinute || 300);
-      const tokensInMillions = totalTokens / 1_000_000;
-      const voiceCostUSD = tokensInMillions * (voiceAgent.pricePer1MTokens || 0);
+      voiceTotalTokens = input.minutesPerMonth * (voiceAgent.tokensPerMinute || 300);
+      const tokensInMillions = voiceTotalTokens / 1_000_000;
+      voiceCostUSD = tokensInMillions * (voiceAgent.pricePer1MTokens || 0);
       voiceCostINR = convertUSDToINR(voiceCostUSD);
     } else if (voiceAgent.pricingModel === 'per-minute') {
       // Per-minute pricing
-      const baseCostUSD = voiceAgent.monthlyBaseCost || 0;
-      const perMinuteCostUSD = (voiceAgent.pricePerMinute || 0) * input.minutesPerMonth;
-      const voiceCostUSD = baseCostUSD + perMinuteCostUSD;
+      voiceBaseCostUSD = voiceAgent.monthlyBaseCost || 0;
+      voicePerMinuteCostUSD = (voiceAgent.pricePerMinute || 0) * input.minutesPerMonth;
+      voiceCostUSD = voiceBaseCostUSD + voicePerMinuteCostUSD;
       voiceCostINR = convertUSDToINR(voiceCostUSD);
     }
   }
 
-  // Calculate hosting cost
-  const hostingCostINR =
-    hostingOption.baseMonthlyCostINR +
-    input.users * hostingOption.costPerUserPerMonthINR +
-    (input.minutesPerMonth / 10) * hostingOption.costPerCallINR; // Assuming ~10 min per call
+  // Calculate hosting cost breakdown
+  const hostingBaseCostINR = hostingOption.baseMonthlyCostINR;
+  const hostingUsersCostINR = input.users * hostingOption.costPerUserPerMonthINR;
+  const estimatedCalls = input.minutesPerMonth / 10; // Assuming ~10 min per call
+  const hostingCallsCostINR = estimatedCalls * hostingOption.costPerCallINR;
+  const hostingCostINR = hostingBaseCostINR + hostingUsersCostINR + hostingCallsCostINR;
 
   // Total cost (including miscellaneous expenses)
   const totalCostINR = avatarCostINR + voiceCostINR + hostingCostINR + MISC_EXPENSES_MONTHLY_INR;
+  const totalCostUSD = convertINRToUSD(totalCostINR);
 
   // Check if fits budget
   const apiCostINR = avatarCostINR + voiceCostINR;
@@ -181,10 +201,22 @@ function calculateCombination(
     totalCostINR,
     breakdown: {
       avatarCostINR,
+      avatarCostUSD: totalAvatarCostUSD,
+      avatarBaseCostUSD,
+      avatarAdditionalMinutes: additionalMinutes,
+      avatarAdditionalCostUSD,
       voiceCostINR,
+      voiceCostUSD,
+      voiceBaseCostUSD,
+      voicePerMinuteCostUSD,
+      voiceTotalTokens,
       hostingCostINR,
+      hostingBaseCostINR,
+      hostingUsersCostINR,
+      hostingCallsCostINR,
       miscExpensesINR: MISC_EXPENSES_MONTHLY_INR,
       totalCostINR,
+      totalCostUSD,
     },
     fitsBudget,
     score,
