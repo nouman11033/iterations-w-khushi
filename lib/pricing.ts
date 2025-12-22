@@ -250,8 +250,8 @@ export const HOSTING_OPTIONS: HostingOption[] = [
   },
 ];
 
-// Exchange rate: 1 USD = 83 INR (approximate)
-const USD_TO_INR = 83;
+// Exchange rate: 1 USD = 90 INR
+const USD_TO_INR = 90;
 
 export function convertUSDToINR(usd: number): number {
   return usd * USD_TO_INR;
