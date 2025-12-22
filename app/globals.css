@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Ensure input fields have visible text in both themes */
+input[type="number"],
+input[type="text"] {
+  color: #111827 !important; /* gray-900 for light mode */
+}
+
+.dark input[type="number"],
+.dark input[type="text"] {
+  color: #ffffff !important; /* white for dark mode */
+}
+
