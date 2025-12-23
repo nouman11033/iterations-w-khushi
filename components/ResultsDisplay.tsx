@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Combination } from '@/lib/calculator';
 import { convertUSDToINR } from '@/lib/pricing';
-import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, Filter, X, ExternalLink } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, ChevronDown, ChevronUp, Filter, X } from 'lucide-react';
 
 interface ResultsDisplayProps {
   results: Combination[];
@@ -19,7 +19,6 @@ interface Filters {
 
 export default function ResultsDisplay({ results, isCalculating }: ResultsDisplayProps) {
   const [showFilters, setShowFilters] = useState(false);
-  const [openCombination, setOpenCombination] = useState<Combination | null>(null);
   const [filters, setFilters] = useState<Filters>({
     avatarProviders: [],
     voiceAgents: [],
@@ -268,7 +267,7 @@ export default function ResultsDisplay({ results, isCalculating }: ResultsDispla
         {filteredResults.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredResults.map((combination, index) => (
-          <CombinationCard key={combination.id} combination={combination} rank={index + 1} onOpen={() => setOpenCombination(combination)} />
+          <CombinationCard key={combination.id} combination={combination} rank={index + 1} />
         ))}
           </div>
         ) : (
@@ -287,20 +286,12 @@ export default function ResultsDisplay({ results, isCalculating }: ResultsDispla
           </div>
         )}
       </div>
-
-      {/* Modal for detailed view */}
-      {openCombination && (
-        <CombinationModal 
-          combination={openCombination} 
-          rank={filteredResults.findIndex(c => c.id === openCombination.id) + 1}
-          onClose={() => setOpenCombination(null)} 
-        />
-      )}
     </div>
   );
 }
 
-function CombinationCard({ combination, rank, onOpen }: { combination: Combination; rank: number; onOpen: () => void }) {
+function CombinationCard({ combination, rank }: { combination: Combination; rank: number }) {
+  const [showDetails, setShowDetails] = useState(false);
   const badgeColor = combination.fitsBudget
     ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
     : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
@@ -309,7 +300,9 @@ function CombinationCard({ combination, rank, onOpen }: { combination: Combinati
   const formatUSD = (amount: number) => `$${amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 
   return (
-    <div className="group relative border border-gray-200/60 dark:border-gray-800/60 rounded-2xl p-6 bg-gradient-to-br from-white via-gray-50/50 to-white dark:from-gray-950 dark:via-black dark:to-gray-950 hover:shadow-2xl hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-500 overflow-hidden"
+    <div 
+      onClick={() => setShowDetails(!showDetails)}
+      className="group relative border border-gray-200/60 dark:border-gray-800/60 rounded-2xl p-6 bg-gradient-to-br from-white via-gray-50/50 to-white dark:from-gray-950 dark:via-black dark:to-gray-950 hover:shadow-2xl hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-500 overflow-hidden cursor-pointer"
     >
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-indigo-50/0 to-purple-50/0 dark:from-blue-950/0 dark:via-indigo-950/0 dark:to-purple-950/0 group-hover:from-blue-50/30 group-hover:via-indigo-50/20 group-hover:to-purple-50/30 dark:group-hover:from-blue-950/20 dark:group-hover:via-indigo-950/10 dark:group-hover:to-purple-950/20 transition-all duration-500 pointer-events-none"></div>
       
@@ -371,132 +364,19 @@ function CombinationCard({ combination, rank, onOpen }: { combination: Combinati
         </div>
       </div>
 
-      {/* Open Button - Bottom Right Corner */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onOpen();
-        }}
-        className="absolute bottom-4 right-4 p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 z-10 flex items-center space-x-1.5"
-        aria-label="Open detailed view"
-      >
-        <ExternalLink className="w-4 h-4" />
-        <span className="text-[0.65rem] font-bold uppercase tracking-wider">Open</span>
-      </button>
-
-      {combination.warnings.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800">
-          <div className="flex items-start space-x-2">
-            <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="text-[0.6rem] text-yellow-800 dark:text-yellow-200 space-y-1">
-              {combination.warnings.map((warning, idx) => (
-                <div key={idx}>• {warning}</div>
-              ))}
-            </div>
-          </div>
+      <div className="mt-4 pt-4 border-t border-gray-200/50 dark:border-gray-800/50">
+        <div className="w-full flex items-center justify-between text-[0.7rem] font-bold text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/30 px-4 py-3 rounded-xl transition-all duration-200">
+          <span className="uppercase tracking-wider text-[0.6rem]">
+            {showDetails ? 'Hide' : 'View'} Detailed Breakdown
+          </span>
+          {showDetails ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </div>
-      )}
 
-      <div className="mt-4 text-[0.6rem] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-        Score: <span className="text-gray-700 dark:text-gray-300">{combination.score.toFixed(0)}</span> (higher is better)
-      </div>
-      </div>
-    </div>
-  );
-}
-
-function CombinationModal({ combination, rank, onClose }: { combination: Combination; rank: number; onClose: () => void }) {
-  const badgeColor = combination.fitsBudget
-    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-
-  const formatINR = (amount: number) => `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
-  const formatUSD = (amount: number) => `$${amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
-
-  return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div 
-        className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-black border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-lg bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors z-10"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-        </button>
-
-        <div className="p-8">
-          {/* Header */}
-          <div className="relative mb-6">
-            {/* Sticker Badge - Top Left Corner */}
-            <div className="absolute -top-1 -left-1 z-20 transform -rotate-12 origin-center">
-              <div className={`px-4 py-1.5 rounded-md ${badgeColor} shadow-xl backdrop-blur-sm border-2 border-white/50 dark:border-gray-900/50`}>
-                {combination.fitsBudget ? (
-                  <span className="flex items-center text-[0.6rem] font-bold">
-                    <CheckCircle className="w-2.5 h-2.5 mr-1" />
-                    Fits Budget
-                  </span>
-                ) : (
-                  <span className="flex items-center text-[0.6rem] font-bold">
-                    <XCircle className="w-2.5 h-2.5 mr-1" />
-                    Over Budget
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600 shadow-lg">
-                  <span className="text-xl font-extrabold text-white">#{rank}</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-extrabold text-gray-900 dark:text-white">
-                  {formatINR(combination.totalCostINR)}
-                </div>
-                <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-1">
-                  {formatUSD(combination.breakdown.totalCostUSD)}
-                </div>
-                <div className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider mt-0.5">per month</div>
-              </div>
-            </div>
-
-            <div className="space-y-3 text-sm mb-6">
-              <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 backdrop-blur-sm">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Avatar</span>
-                <span className="font-bold text-gray-900 dark:text-white">
-                  {combination.avatarPlan.name}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 backdrop-blur-sm">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Voice</span>
-                <span className="font-bold text-gray-900 dark:text-white">
-                  {combination.voiceAgent
-                    ? `${combination.voiceAgent.name}${combination.voiceAgent.concurrency ? ` (${combination.voiceAgent.concurrency} conc.)` : ''}`
-                    : 'Inbuilt (Avatar)'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 backdrop-blur-sm">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Hosting</span>
-                <span className="font-bold text-gray-900 dark:text-white">
-                  {combination.hostingOption.name}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Detailed Breakdown */}
-          <div className="space-y-4 text-sm">
+        {showDetails && (
+          <div className="mt-4 space-y-4 text-[0.6rem]">
             {/* Avatar Cost Breakdown */}
             <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black rounded-xl p-4 border border-gray-200 dark:border-gray-800">
-              <div className="text-base font-semibold text-gray-900 dark:text-white mb-2">Avatar Cost Breakdown</div>
+              <div className="text-[0.7rem] font-semibold text-gray-900 dark:text-white mb-2">Avatar Cost Breakdown</div>
               <div className="space-y-1 text-gray-700 dark:text-gray-300">
                 <div className="flex justify-between">
                   <span>Base Plan Cost:</span>
@@ -511,11 +391,11 @@ function CombinationModal({ combination, rank, onClose }: { combination: Combina
                       <span>Included Minutes:</span>
                       <span>{combination.avatarPlan.minutes.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between">
+          <div className="flex justify-between">
                       <span>Additional Minutes:</span>
                       <span>{combination.breakdown.avatarAdditionalMinutes.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
+          </div>
+            <div className="flex justify-between">
                       <span>Additional Cost ({formatUSD(combination.avatarPlan.additionalPerMin)}/min):</span>
                       <div className="text-right">
                         <div>{formatUSD(combination.breakdown.avatarAdditionalCostUSD)}</div>
@@ -537,7 +417,7 @@ function CombinationModal({ combination, rank, onClose }: { combination: Combina
             {/* Voice Cost Breakdown */}
             {combination.breakdown.voiceCostINR > 0 && (
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl p-4 border border-blue-200 dark:border-blue-900">
-                <div className="text-base font-semibold text-gray-900 dark:text-white mb-2">Voice Agent Cost Breakdown</div>
+                <div className="text-[0.7rem] font-semibold text-gray-900 dark:text-white mb-2">Voice Agent Cost Breakdown</div>
                 <div className="space-y-1 text-gray-700 dark:text-gray-300">
                   {combination.voiceAgent?.pricingModel === 'tokens' && combination.breakdown.voiceTotalTokens && (
                     <>
@@ -584,9 +464,9 @@ function CombinationModal({ combination, rank, onClose }: { combination: Combina
                         </div>
                       )}
                       {combination.breakdown.voiceBaseCostUSD !== undefined && combination.breakdown.voiceBaseCostUSD > 0 && (
-                        <div className="text-xs text-gray-500 italic mt-1">
-                          * Cost is the higher of minimum or per-minute cost
-                        </div>
+                      <div className="text-[0.6rem] text-gray-500 italic mt-1">
+                        * Cost is the higher of minimum or per-minute cost
+                      </div>
                       )}
                     </>
                   )}
@@ -615,12 +495,12 @@ function CombinationModal({ combination, rank, onClose }: { combination: Combina
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+            </div>
+          )}
 
             {/* Hosting Cost Breakdown */}
             <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl p-4 border border-purple-200 dark:border-purple-900">
-              <div className="text-base font-semibold text-gray-900 dark:text-white mb-2">Hosting Cost Breakdown</div>
+              <div className="text-[0.7rem] font-semibold text-gray-900 dark:text-white mb-2">Hosting Cost Breakdown</div>
               <div className="space-y-1 text-gray-700 dark:text-gray-300">
                 <div className="flex justify-between">
                   <span>Base Monthly Cost:</span>
@@ -630,20 +510,20 @@ function CombinationModal({ combination, rank, onClose }: { combination: Combina
                   <span>Users Cost ({combination.hostingOption.costPerUserPerMonthINR}/user):</span>
                   <span>{formatINR(combination.breakdown.hostingUsersCostINR)}</span>
                 </div>
-                <div className="flex justify-between">
+          <div className="flex justify-between">
                   <span>Calls Cost ({combination.hostingOption.costPerCallINR}/call):</span>
                   <span>{formatINR(combination.breakdown.hostingCallsCostINR)}</span>
                 </div>
                 <div className="flex justify-between pt-1 border-t border-gray-300 dark:border-gray-700 font-semibold">
                   <span>Total Hosting Cost:</span>
                   <span>{formatINR(combination.breakdown.hostingCostINR)}</span>
-                </div>
-              </div>
+          </div>
+        </div>
             </div>
 
             {/* Misc Expenses */}
             <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/30 dark:to-orange-900/30 rounded-xl p-4 border border-yellow-200 dark:border-yellow-900">
-              <div className="text-base font-semibold text-gray-900 dark:text-white mb-2">Miscellaneous Expenses</div>
+              <div className="text-[0.7rem] font-semibold text-gray-900 dark:text-white mb-2">Miscellaneous Expenses</div>
               <div className="flex justify-between text-gray-700 dark:text-gray-300">
                 <span>Fixed Monthly Cost:</span>
                 <span>{formatINR(combination.breakdown.miscExpensesINR)}</span>
@@ -652,35 +532,36 @@ function CombinationModal({ combination, rank, onClose }: { combination: Combina
 
             {/* Total Summary */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-5 border-2 border-blue-500 dark:border-blue-400 shadow-lg">
-              <div className="font-bold text-white mb-3 text-base">Total Monthly Cost</div>
-              <div className="flex justify-between text-lg mb-2">
+              <div className="font-bold text-white mb-3 text-[0.7rem]">Total Monthly Cost</div>
+              <div className="flex justify-between text-[0.8rem] mb-2">
                 <span className="text-blue-100">INR:</span>
                 <span className="font-extrabold text-white">{formatINR(combination.breakdown.totalCostINR)}</span>
               </div>
-              <div className="flex justify-between text-lg">
+              <div className="flex justify-between text-[0.8rem]">
                 <span className="text-blue-100">USD:</span>
                 <span className="font-extrabold text-white">{formatUSD(combination.breakdown.totalCostUSD)}</span>
               </div>
             </div>
           </div>
+        )}
+      </div>
 
-          {combination.warnings.length > 0 && (
-            <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
-              <div className="flex items-start space-x-2">
-                <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <div className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
-                  {combination.warnings.map((warning, idx) => (
-                    <div key={idx}>• {warning}</div>
-                  ))}
-                </div>
-              </div>
+      {combination.warnings.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800">
+          <div className="flex items-start space-x-2">
+            <AlertTriangle className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+            <div className="text-[0.6rem] text-yellow-800 dark:text-yellow-200 space-y-1">
+              {combination.warnings.map((warning, idx) => (
+                <div key={idx}>• {warning}</div>
+              ))}
             </div>
-          )}
-
-          <div className="mt-6 text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-            Score: <span className="text-gray-700 dark:text-gray-300">{combination.score.toFixed(0)}</span> (higher is better)
           </div>
         </div>
+      )}
+
+      <div className="mt-4 text-[0.6rem] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        Score: <span className="text-gray-700 dark:text-gray-300">{combination.score.toFixed(0)}</span> (higher is better)
+      </div>
       </div>
     </div>
   );
