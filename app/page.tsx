@@ -58,18 +58,26 @@ export default function Home() {
         <aside
           className={`${
             sidebarOpen ? 'w-96' : 'w-0'
-          } transition-all duration-300 ease-in-out overflow-hidden border-r border-gray-200 dark:border-gray-800 bg-white/95 dark:bg-black/95 backdrop-blur-sm`}
+          } transition-all duration-300 ease-in-out overflow-hidden relative`}
         >
-          <div className="h-full overflow-y-auto p-6">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                Budget Configuration
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Configure your budget and usage parameters
-              </p>
+          <div className="h-full bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-950 dark:via-black dark:to-gray-950 border-r border-gray-200/50 dark:border-gray-800/50 shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/30 to-transparent dark:via-blue-950/10 pointer-events-none"></div>
+            <div className="h-full overflow-y-auto p-8 relative z-10">
+              <div className="mb-8 pb-6 border-b border-gray-200/50 dark:border-gray-800/50">
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="w-1 h-8 bg-gradient-to-b from-blue-600 to-indigo-600 rounded-full"></div>
+                  <div>
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                      Configuration
+                    </h2>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 font-medium">
+                      Budget & Usage Parameters
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <BudgetForm onSubmit={handleCalculate} isCalculating={isCalculating} />
             </div>
-            <BudgetForm onSubmit={handleCalculate} isCalculating={isCalculating} />
           </div>
         </aside>
 

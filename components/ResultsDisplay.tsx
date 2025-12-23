@@ -300,11 +300,15 @@ function CombinationCard({ combination, rank }: { combination: Combination; rank
   const formatUSD = (amount: number) => `$${amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 
   return (
-    <div className="border-2 border-gray-200 dark:border-gray-800 rounded-xl p-5 bg-gradient-to-br from-white to-gray-50 dark:from-black dark:to-gray-900 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-300">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center space-x-2">
-          <span className="text-xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">#{rank}</span>
-          <span className={`px-3 py-1.5 rounded-full text-xs font-bold ${badgeColor} shadow-sm`}>
+    <div className="group relative border border-gray-200/60 dark:border-gray-800/60 rounded-2xl p-6 bg-gradient-to-br from-white via-gray-50/50 to-white dark:from-gray-950 dark:via-black dark:to-gray-950 hover:shadow-2xl hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-500 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 via-indigo-50/0 to-purple-50/0 dark:from-blue-950/0 dark:via-indigo-950/0 dark:to-purple-950/0 group-hover:from-blue-50/30 group-hover:via-indigo-50/20 group-hover:to-purple-50/30 dark:group-hover:from-blue-950/20 dark:group-hover:via-indigo-950/10 dark:group-hover:to-purple-950/20 transition-all duration-500 pointer-events-none"></div>
+      <div className="relative z-10">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 shadow-lg">
+            <span className="text-lg font-extrabold text-white">#{rank}</span>
+          </div>
+          <span className={`px-4 py-1.5 rounded-full text-xs font-bold ${badgeColor} shadow-md backdrop-blur-sm`}>
             {combination.fitsBudget ? (
               <span className="flex items-center">
                 <CheckCircle className="w-3 h-3 mr-1" />
@@ -319,45 +323,45 @@ function CombinationCard({ combination, rank }: { combination: Combination; rank
           </span>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
             {formatINR(combination.totalCostINR)}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-1">
             {formatUSD(combination.breakdown.totalCostUSD)}
           </div>
-          <div className="text-xs text-gray-500">per month</div>
+          <div className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider mt-0.5">per month</div>
         </div>
       </div>
 
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-600 dark:text-gray-400">Avatar:</span>
-          <span className="font-medium text-gray-900 dark:text-white">
+      <div className="space-y-3 text-sm mb-4">
+        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 backdrop-blur-sm">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Avatar</span>
+          <span className="font-bold text-gray-900 dark:text-white">
             {combination.avatarPlan.name}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600 dark:text-gray-400">Voice:</span>
-          <span className="font-medium text-gray-900 dark:text-white">
+        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 backdrop-blur-sm">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Voice</span>
+          <span className="font-bold text-gray-900 dark:text-white">
             {combination.voiceAgent
               ? `${combination.voiceAgent.name}${combination.voiceAgent.concurrency ? ` (${combination.voiceAgent.concurrency} conc.)` : ''}`
               : 'Inbuilt (Avatar)'}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600 dark:text-gray-400">Hosting:</span>
-          <span className="font-medium text-gray-900 dark:text-white">
+        <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-gray-50/50 dark:bg-gray-900/30 backdrop-blur-sm">
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Hosting</span>
+          <span className="font-bold text-gray-900 dark:text-white">
             {combination.hostingOption.name}
           </span>
         </div>
       </div>
 
-      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-800">
+      <div className="mt-4 pt-4 border-t border-gray-200/50 dark:border-gray-800/50">
         <button
           onClick={() => setShowDetails(!showDetails)}
-          className="w-full flex items-center justify-between text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+          className="w-full flex items-center justify-between text-sm font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/30 dark:to-indigo-950/30 px-4 py-3 rounded-xl hover:from-blue-100/50 hover:to-indigo-100/50 dark:hover:from-blue-900/40 dark:hover:to-indigo-900/40 transition-all duration-200 shadow-sm hover:shadow-md backdrop-blur-sm"
         >
-          <span>View Detailed Cost Breakdown</span>
+          <span className="uppercase tracking-wider text-xs">View Detailed Breakdown</span>
           {showDetails ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
         </button>
 
@@ -548,8 +552,9 @@ function CombinationCard({ combination, rank }: { combination: Combination; rank
         </div>
       )}
 
-      <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-        Score: {combination.score.toFixed(0)} (higher is better)
+      <div className="mt-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        Score: <span className="text-gray-700 dark:text-gray-300">{combination.score.toFixed(0)}</span> (higher is better)
+      </div>
       </div>
     </div>
   );
