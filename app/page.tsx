@@ -45,9 +45,6 @@ export default function Home() {
               <h1 className="text-2xl font-extrabold text-red-600 dark:text-red-500">
                 iterations w khushi
               </h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Smart cost estimation for avatar & voice solutions
-              </p>
             </div>
           </div>
         </div>
